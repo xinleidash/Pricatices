@@ -8,7 +8,8 @@ import {
 
 import './login.less'
 import logo from './images/logo.png'
-import { getConsoleOutput } from '@jest/console';
+import {reqLogin} from '../../api'
+// import { getConsoleOutput } from '@jest/console';
 
 const Item = Form.Item  //不能写在import之前
 
@@ -19,14 +20,22 @@ class Login extends Component {
 
     handleSubmit = (event) => {
 
-        // 组织事件的默认行为
+        // // 组织事件的默认行为
         event.preventDefault()
 
-        // 对所有表单字段进行检验
+        // // 对所有表单字段进行检验
         this.props.form.validateFields((err, values) => {
             // 检验成功
             if (!err) {
-              console.log('提交登陆的ajax请求', values);
+            //   console.log('提交登陆的ajax请求', values);
+                //请求登陆
+                const {username, password} = values  // {}中的需要和标识名一样
+                reqLogin(username, password).then(response => {
+                    console.log('成功了', response.data)
+                }).catch(error => {
+                    console.log('失败了', error)
+                })  // alt + <向左的方向键 查看完函数后回到这里
+
             } else {
                 console.log('检验失败！')
             }
@@ -56,8 +65,8 @@ class Login extends Component {
         } else {
             callback() // 验证通过
         }
-        callback() //验证通过
-        // callback('xxx') //验证失败，并制定提示的文本
+    //     callback() //验证通过
+    //     // callback('xxx') //验证失败，并制定提示的文本
     }
 
     render () {
@@ -85,6 +94,7 @@ class Login extends Component {
                                         { max: 12, message: '用户名最多12位' },
                                         { pattern: /^[a-zA-Z0-9_]+$/, message: 'Please input your username!' }
                                     ],
+                                    initialValue: 'admin', 
                                 })(
                                     <Input
                                         prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
@@ -95,7 +105,13 @@ class Login extends Component {
                         </Item>
                         <Form.Item>
                             {
-                                getFieldDecorator('password', {})(
+                                getFieldDecorator('password', {
+                                    rules: [
+                                        {
+                                            validator: this.validatePwd
+                                        }
+                                    ]
+                                })(
                                     <Input
                                         prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />}
                                         type="password"
@@ -105,9 +121,9 @@ class Login extends Component {
                             }
                         </Form.Item>
                         <Form.Item>
-                        <Button type="primary" htmlType="submit" className="login-form-button">
-                            登陆
-                        </Button>
+                            <Button type="primary" htmlType="submit" className="login-form-button">
+                                登陆
+                            </Button>
                         </Form.Item>
                     </Form>
                 </section>
@@ -136,16 +152,28 @@ class Login extends Component {
     4). 高阶组件也是高阶函数： 接受一个组件函数，返回的是一个新的组件函数
 
 */
-
+ 
 /*
 包装Form组件生成一个新的组件： Form（Login）
 新组件会向Form组件传递一个强大的对象属性： form
 */
 
-const WrapLogin = Form.create()(Login) //包装一个组件（login）生成一个新的组件wraplogin
+const WrapLogin = Form.create()(Login) 
+//包装一个组件（login）生成一个新的组件wraplogin
 export default WrapLogin
 
 /*
     1. 前台表单验证
     2. 收集表单输入数据
 */
+
+/*
+async和await
+1. 作用?
+   简化promise对象的使用: 不用再使用then()来指定成功/失败的回调函数
+   以同步编码(没有回调函数了)方式实现异步流程
+2. 哪里写await?
+    在返回promise的表达式左侧写await: 不想要promise, 想要promise异步执行的成功的value数据
+3. 哪里写async?
+    await所在函数(最近的)定义的左侧写async
+ */
